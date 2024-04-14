@@ -486,7 +486,7 @@ if __name__ == "__main__":
     #     else:
     #         col_str +=",  " + col
     # print(col_str)
-    program_max_len = args.program_max_len
+    program_max_len = args.num_ands
     print("program max len::", program_max_len)
     patient_max_appts = 1
     # train_dataset = EHRDataset(data= train_data, drop_cols=DROP_FEATS, patient_max_appts = patient_max_appts, balance=True)

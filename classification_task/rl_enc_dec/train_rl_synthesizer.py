@@ -1091,7 +1091,7 @@ if __name__ == "__main__":
     epsilon_falloff = args.epsilon_falloff
     target_update = args.target_update
     epochs = args.epochs
-    program_max_len = args.program_max_len
+    program_max_len = args.num_ands
     patient_max_appts = args.patient_max_appts
     provenance = "difftopkproofs"
     latent_size = args.latent_size

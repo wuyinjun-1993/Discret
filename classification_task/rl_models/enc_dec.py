@@ -2419,9 +2419,9 @@ def create_deep_set_net_for_programs(net, ATOM_VEC_LENGTH, latent_size):
 class RLSynthesizerNetwork_mlp(nn.Module):
     def init_without_feat_groups(self, lang, args,  latent_size, num_feat_count, category_sum_count, feat_range_mappings, continue_act=False):
         super(RLSynthesizerNetwork_mlp, self).__init__()
-        self.topk_act=args.topk_act
+        self.topk_act=args.num_ors
         self.lang = lang
-        self.program_max_len=args.program_max_len
+        self.program_max_len=args.num_ands
         self.grammar_num_to_token_val = {}#{i:{num:option for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_val_to_num = {}#{i:{option:num for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_to_pos = {}
@@ -2575,9 +2575,9 @@ class RLSynthesizerNetwork_mlp(nn.Module):
     
     def init_with_feat_groups(self, lang, args, latent_size, feat_range_mappings, continue_act=False, feat_group_names=None):
         super(RLSynthesizerNetwork_mlp, self).__init__()
-        self.topk_act=args.topk_act
+        self.topk_act=args.num_ors
         self.lang = lang
-        self.program_max_len=args.program_max_len
+        self.program_max_len=args.num_ands
         self.grammar_num_to_token_val = {}#{i:{num:option for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_val_to_num = {}#{i:{option:num for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_to_pos = {}
@@ -4366,9 +4366,9 @@ class RLSynthesizerNetwork_transformer(nn.Module):
         
     def init_without_feat_groups2(self,lang, args, latent_size, tf_latent_size, feat_range_mappings, numeric_count, category_count, has_embeddings=False,pretrained_model_path=None, continue_act=False):
         super(RLSynthesizerNetwork_transformer, self).__init__()
-        self.topk_act = args.topk_act
+        self.topk_act = args.num_ors
         self.lang = lang
-        self.program_max_len=args.program_max_len
+        self.program_max_len=args.num_ands
         self.grammar_num_to_token_val = {}#{i:{num:option for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_val_to_num = {}#{i:{option:num for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_to_pos = {}
@@ -4941,9 +4941,9 @@ class RLSynthesizerNetwork_transformer(nn.Module):
 
     def init_with_feat_groups2(self,lang, args,  latent_size, tf_latent_size, feat_range_mappings, numeric_count, category_count, has_embeddings=False,pretrained_model_path=None, continue_act=False, feat_group_names=None):
         super(RLSynthesizerNetwork_transformer, self).__init__()
-        self.topk_act = args.topk_act
+        self.topk_act = args.num_ors
         self.lang = lang
-        self.program_max_len=args.program_max_len
+        self.program_max_len=args.num_ands
         self.grammar_num_to_token_val = {}#{i:{num:option for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_val_to_num = {}#{i:{option:num for num,option in enumerate(list(v.keys()))} for i,v in self.lang.syntax.items()}
         self.grammar_token_to_pos = {}

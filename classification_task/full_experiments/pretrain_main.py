@@ -248,7 +248,7 @@ if __name__ == "__main__":
     #     else:
     #         col_str +=",  " + col
     # print(col_str)
-    program_max_len = args.program_max_len
+    program_max_len = args.num_ands
     print("program max len::", program_max_len)
     # train_dataset = EHRDataset(data= train_data, drop_cols=DROP_FEATS, patient_max_appts = patient_max_appts, balance=True)
     # train_valid_dataset = EHRDataset(data= pd.concat([train_data, valid_data]), drop_cols=DROP_FEATS, patient_max_appts = patient_max_appts, balance=True)

@@ -33,7 +33,7 @@ class DQN_all:
         self.gamma = rl_config["gamma"]
         self.lang = lang
         torch.manual_seed(args.seed)
-        self.topk_act = args.topk_act
+        self.topk_act = args.num_ors
         torch.manual_seed(args.seed)
         # self.do_medical = args.do_medical
         # if not args.do_medical:
@@ -44,10 +44,10 @@ class DQN_all:
         
         if args.model == "mlp":
             self.target_net = RLSynthesizerNetwork_mlp(args=args, lang=lang, model_config=model_config, rl_config=rl_config, num_feat_count=numeric_count, category_sum_count=category_sum_count, feat_range_mappings=feat_range_mappings, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls)
-            # self.target_net = RLSynthesizerNetwork_mlp(lang=lang, program_max_len=args.program_max_len,latent_size=model_config["latent_size"], dropout_p = 0, num_feat_count=numeric_count, category_sum_count=category_sum_count, feat_range_mappings=feat_range_mappings, topk_act=args.topk_act, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range= args.prefer_smaller_range, prefer_smaller_range_coeff = args.prefer_smaller_range_coeff, args = args, discretize_feat_value_count=rl_config["discretize_feat_value_count"])
+            # self.target_net = RLSynthesizerNetwork_mlp(lang=lang, program_max_len=args.num_ands,latent_size=model_config["latent_size"], dropout_p = 0, num_feat_count=numeric_count, category_sum_count=category_sum_count, feat_range_mappings=feat_range_mappings, topk_act=args.num_ors, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range= args.prefer_smaller_range, prefer_smaller_range_coeff = args.prefer_smaller_range_coeff, args = args, discretize_feat_value_count=rl_config["discretize_feat_value_count"])
         else:
             self.target_net = RLSynthesizerNetwork_transformer(args=args, lang=lang, model_config=model_config, rl_config=rl_config, feat_range_mappings=feat_range_mappings, numeric_count=numeric_count, category_count=category_count, has_embeddings=has_embeddings, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls)
-            # self.target_net = RLSynthesizerNetwork_transformer(lang=lang, program_max_len=args.program_max_len,latent_size=model_config["latent_size"], tf_latent_size=model_config["tf_latent_size"], dropout_p = 0, feat_range_mappings=feat_range_mappings, numeric_count=numeric_count, category_count=category_count, has_embeddings=has_embeddings, pretrained_model_path=model_config["pretrained_model_path"], topk_act=args.topk_act, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range=args.prefer_smaller_range, prefer_smaller_range_coeff=args.prefer_smaller_range_coeff, method_two=args.method_two, args = args, discretize_feat_value_count=rl_config["discretize_feat_value_count"])
+            # self.target_net = RLSynthesizerNetwork_transformer(lang=lang, program_max_len=args.num_ands,latent_size=model_config["latent_size"], tf_latent_size=model_config["tf_latent_size"], dropout_p = 0, feat_range_mappings=feat_range_mappings, numeric_count=numeric_count, category_count=category_count, has_embeddings=has_embeddings, pretrained_model_path=model_config["pretrained_model_path"], topk_act=args.num_ors, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range=args.prefer_smaller_range, prefer_smaller_range_coeff=args.prefer_smaller_range_coeff, method_two=args.method_two, args = args, discretize_feat_value_count=rl_config["discretize_feat_value_count"])
         # else:
         #     if model == "mlp":
         #         self.policy_net = RLSynthesizerNetwork_mlp0(lang=lang, program_max_len=program_max_len,latent_size=model_config["latent_size"], dropout_p=dropout_p, category_sum_count=category_sum_count, feat_range_mappings=feat_range_mappings, topk_act=topk_act, feat_group_names=feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range = prefer_smaller_range, prefer_smaller_range_coeff=prefer_smaller_range_coeff, args = args, discretize_feat_value_count=discretize_feat_value_count)

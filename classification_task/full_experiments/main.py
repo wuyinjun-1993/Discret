@@ -129,7 +129,7 @@ if __name__ == "__main__":
     args.label_cln = label_cln
     args.id_cln = id_cln
     
-    program_max_len = args.program_max_len
+    program_max_len = args.num_ands
     print("program max len::", program_max_len)
     
     dataset_folder = os.path.join(args.data_folder, args.dataset_name)
@@ -331,7 +331,7 @@ if __name__ == "__main__":
         test_feat, test_labels = construct_feat_label_mat(test_dataset)
 
         # gb_model = dt_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=1000, multi_label=multi_label)
-        gb_model = dt_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=args.program_max_len, multi_label=multi_label)
+        gb_model = dt_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=args.num_ands, multi_label=multi_label)
 
         gb_pred_labels, pred_prob_labels = dt_model_pred(test_feat, gb_model, multi_label=multi_label)
 
@@ -346,7 +346,7 @@ if __name__ == "__main__":
         #     train_labels, valid_labels, test_labels = remove_empty_classes(train_labels, valid_labels, test_labels)
         
         gb_model = gb_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=1000, multi_label=multi_label)
-        # gb_model = gb_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=args.program_max_len, multi_label=multi_label)
+        # gb_model = gb_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=args.num_ands, multi_label=multi_label)
 
         gb_pred_labels, pred_prob_labels = gb_model_pred(test_feat, gb_model, multi_label=multi_label)
 
@@ -361,7 +361,7 @@ if __name__ == "__main__":
         #     train_labels, valid_labels, test_labels = remove_empty_classes(train_labels, valid_labels, test_labels)
 
         gb_model = rf_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=1000, multi_label=multi_label)
-        # gb_model = rf_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=args.program_max_len, multi_label=multi_label)
+        # gb_model = rf_model_train(feat_mats=train_feat, label_mats=train_labels, feat_count=args.num_ands, multi_label=multi_label)
 
         gb_pred_labels, pred_prob_labels = rf_model_pred(test_feat, gb_model, multi_label=multi_label)
 

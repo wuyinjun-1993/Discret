@@ -192,11 +192,11 @@ def process_curr_atoms0_2(trainer, atom_ls, program, program_str, all_other_pats
 
 
 class Trainer_all:
-    # lang=lang, train_dataset=train_dataset, valid_dataset=valid_dataset,test_dataset = test_dataset, train_feat_embeddings=train_feat_embeddings, valid_feat_embeddings=valid_feat_embeddings, test_feat_embeddings=test_feat_embeddings, program_max_len=program_max_len, topk_act=args.topk_act,   learning_rate=args.learning_rate, batch_size=args.batch_size, epochs=args.epochs,       is_log = args.is_log, dropout_p=args.dropout_p, feat_range_mappings=feat_range_mappings, seed=args.seed, work_dir=work_dir, numeric_count=numeric_count, category_count=category_count , model=args.model, rl_algorithm=args.rl_algorithm,model_config = model_config,rl_config = rl_config
+    # lang=lang, train_dataset=train_dataset, valid_dataset=valid_dataset,test_dataset = test_dataset, train_feat_embeddings=train_feat_embeddings, valid_feat_embeddings=valid_feat_embeddings, test_feat_embeddings=test_feat_embeddings, program_max_len=program_max_len, topk_act=args.num_ors,   learning_rate=args.learning_rate, batch_size=args.batch_size, epochs=args.epochs,       is_log = args.is_log, dropout_p=args.dropout_p, feat_range_mappings=feat_range_mappings, seed=args.seed, work_dir=work_dir, numeric_count=numeric_count, category_count=category_count , model=args.model, rl_algorithm=args.rl_algorithm,model_config = model_config,rl_config = rl_config
     def __init__(self, lang:Language, train_dataset, valid_dataset, test_dataset, train_feat_embeddings, valid_feat_embeddings, test_feat_embeddings, feat_range_mappings, args, work_dir, numeric_count=None, category_count=None, category_sum_count=None, model_config=None, rl_config=None, feat_group_names=None, removed_feat_ls=None, id_cln = "id", label_cln="label"):
         self.label_cln = label_cln
         self.id_cln = id_cln
-        self.topk_act =args.topk_act
+        self.topk_act =args.num_ors
         self.feat_range_mappings = feat_range_mappings
         if args.rl_algorithm == "dqn":
             self.dqn = DQN_all(lang=lang, args = args, rl_config=rl_config, feat_range_mappings=feat_range_mappings, numeric_count=numeric_count, category_count=category_count,category_sum_count = category_sum_count, has_embeddings=(train_feat_embeddings is not None), model_config = model_config, feat_group_names = feat_group_names, removed_feat_ls=removed_feat_ls)
@@ -205,7 +205,7 @@ class Trainer_all:
             self.target_update = rl_config["target_update"]
         else:
             # (self, lang, replay_memory_capacity, learning_rate, batch_size, gamma, provenance, program_max_len, patient_max_appts,latent_size, tf_latent_size, dropout_p, n_updates_per_iteration, clip,feat_range_mappings, seed=0, numeric_count=None, category_count=None, has_embeddings=False, model="mlp", pretrained_model_path=None, topk_act=1)
-            self.dqn = PPO_all(lang=lang, learning_rate=args.learning_rate, batch_size=args.batch_size, gamma=rl_config["gamma"], program_max_len=args.program_max_len, dropout_p=args.dropout_p, n_updates_per_iteration = rl_config["n_updates_per_iteration"], clip=rl_config["clip"], feat_range_mappings=feat_range_mappings, seed=args.seed, numeric_count=numeric_count, category_count=category_count, category_sum_count = category_sum_count, has_embeddings=(train_feat_embeddings is not None), model=args.model, topk_act=args.topk_act, continue_act = rl_config["continue_act"], model_config = model_config, feat_group_names = feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range = args.prefer_smaller_range, prefer_smaller_range_coeff= args.prefer_smaller_range_coeff, args = args)
+            self.dqn = PPO_all(lang=lang, learning_rate=args.learning_rate, batch_size=args.batch_size, gamma=rl_config["gamma"], program_max_len=args.num_ands, dropout_p=args.dropout_p, n_updates_per_iteration = rl_config["n_updates_per_iteration"], clip=rl_config["clip"], feat_range_mappings=feat_range_mappings, seed=args.seed, numeric_count=numeric_count, category_count=category_count, category_sum_count = category_sum_count, has_embeddings=(train_feat_embeddings is not None), model=args.model, topk_act=args.num_ors, continue_act = rl_config["continue_act"], model_config = model_config, feat_group_names = feat_group_names, removed_feat_ls=removed_feat_ls, prefer_smaller_range = args.prefer_smaller_range, prefer_smaller_range_coeff= args.prefer_smaller_range_coeff, args = args)
             self.timesteps_per_batch = rl_config["timesteps_per_batch"]
 
         self.rl_algorithm = args.rl_algorithm
@@ -219,7 +219,7 @@ class Trainer_all:
         self.test_dataset = test_dataset
         self.lang = lang
         
-        self.program_max_len = args.program_max_len
+        self.program_max_len = args.num_ands
         self.is_log = args.is_log
         self.batch_size = args.batch_size
         self.train_feat_embeddings=train_feat_embeddings
@@ -1440,7 +1440,7 @@ class Trainer_all:
 
 
 # class Trainer_all2:
-#     # lang=lang, train_dataset=train_dataset, valid_dataset=valid_dataset,test_dataset = test_dataset, train_feat_embeddings=train_feat_embeddings, valid_feat_embeddings=valid_feat_embeddings, test_feat_embeddings=test_feat_embeddings, program_max_len=program_max_len, topk_act=args.topk_act,   learning_rate=args.learning_rate, batch_size=args.batch_size, epochs=args.epochs,       is_log = args.is_log, dropout_p=args.dropout_p, feat_range_mappings=feat_range_mappings, seed=args.seed, work_dir=work_dir, numeric_count=numeric_count, category_count=category_count , model=args.model, rl_algorithm=args.rl_algorithm,model_config = model_config,rl_config = rl_config
+#     # lang=lang, train_dataset=train_dataset, valid_dataset=valid_dataset,test_dataset = test_dataset, train_feat_embeddings=train_feat_embeddings, valid_feat_embeddings=valid_feat_embeddings, test_feat_embeddings=test_feat_embeddings, program_max_len=program_max_len, topk_act=args.num_ors,   learning_rate=args.learning_rate, batch_size=args.batch_size, epochs=args.epochs,       is_log = args.is_log, dropout_p=args.dropout_p, feat_range_mappings=feat_range_mappings, seed=args.seed, work_dir=work_dir, numeric_count=numeric_count, category_count=category_count , model=args.model, rl_algorithm=args.rl_algorithm,model_config = model_config,rl_config = rl_config
 #     def __init__(self, lang:Language, train_dataset, valid_dataset, test_dataset, train_feat_embeddings, valid_feat_embeddings, test_feat_embeddings, program_max_len, topk_act, learning_rate, batch_size, epochs,is_log, dropout_p, feat_range_mappings, seed, work_dir, numeric_count=None, category_count=None, category_sum_count=None, model="mlp", rl_algorithm= "dqn", model_config=None, rl_config=None, feat_group_names=None, removed_feat_ls=None, prefer_smaller_range = False, prefer_smaller_range_coeff = 0.5, method_two=False, args = None):
 #         self.topk_act =topk_act
 #         if rl_algorithm == "dqn":

@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument('--dropout_p', type=float, default=0, help="std of the initial phi table")
     # parser.add_argument('--target_update', type=int, default=20, help="std of the initial phi table")
     parser.add_argument('--epochs', type=int, default=100, help="std of the initial phi table")
-    parser.add_argument('--program_max_len', type=int, default=6, help="std of the initial phi table")
+    parser.add_argument('--num_ands', type=int, default=6, help="std of the initial phi table")
     parser.add_argument('--log_folder', type=str, default="logs/", help="std of the initial phi table")
     # parser.add_argument('--latent_size', type=int, default=100, help="std of the initial phi table")
     # parser.add_argument('--tf_latent_size', type=int, default=30, help="std of the initial phi table")
@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument('--removed_feats_file_name', type=str, default=None, help="std of the initial phi table")
     parser.add_argument('--pretrained_model_path', type=str, default=None, help="std of the initial phi table")
     parser.add_argument('--rl_algorithm', type=str, default="dqn", choices=["dqn", "ppo"], help="std of the initial phi table")
-    parser.add_argument('--topk_act', type=int, default=1, help="std of the initial phi table")
+    parser.add_argument('--num_ors', type=int, default=1, help="std of the initial phi table")
 
     parser.add_argument('--model_suffix', type=int, default=0, help="std of the initial phi table")
     parser.add_argument('--model_folder', type=str, default=None, help="std of the initial phi table")
