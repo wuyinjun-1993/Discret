@@ -1,6 +1,17 @@
 # Discret
 
 
+## Initialization and installing necessary packages in a new anaconda environment
+```
+conda create --name myenv python=3.8
+conda activate myenv
+## install appropriate pytorch library here, e.g.,: 
+pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+
+
 ## Training a transformer model as baseline (the implementation of the transformer model follows [this paper](https://arxiv.org/abs/2106.11959v2)):
 ```
 python classification_task/full_experiments/pretrain_main.py --dataset_name cardio --batch_size 32 --log_folder logs/ --model transformer --learning_rate 5e-4
