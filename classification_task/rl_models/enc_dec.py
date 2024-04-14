@@ -973,12 +973,12 @@ def forward_main0(net, hx, eval, epsilon, program, outbound_mask_ls, atom, pat_c
 
     pred_probs_vals = (torch.softmax(pred,dim=-1) + 1e-5)*pred_out_mask
     pred_Q_vals = torch.tanh(pred)*pred_out_mask + (min_Q_val)*(1 - pred_out_mask)
-    if net.prefer_smaller_range:
+    # if net.prefer_smaller_range:
         
-        regularized_coeff = [torch.exp(-net.prefer_smaller_range_coeff*(feat_val[:,k].view(-1,1) - net.selected_vals.view(1,-1))**2) for k in range(net.topk_act)]
-        regularized_coeff = torch.stack(regularized_coeff, dim=1)
-        pred_probs_vals = pred_probs_vals*regularized_coeff
-        pred_Q_vals = torch.tanh(pred)*pred_out_mask*regularized_coeff + (min_Q_val)*(1 - pred_out_mask*regularized_coeff)
+    #     regularized_coeff = [torch.exp(-net.prefer_smaller_range_coeff*(feat_val[:,k].view(-1,1) - net.selected_vals.view(1,-1))**2) for k in range(net.topk_act)]
+    #     regularized_coeff = torch.stack(regularized_coeff, dim=1)
+    #     pred_probs_vals = pred_probs_vals*regularized_coeff
+    #     pred_Q_vals = torch.tanh(pred)*pred_out_mask*regularized_coeff + (min_Q_val)*(1 - pred_out_mask*regularized_coeff)
     # pred_Q_vals = pred_Q_vals*selected_num_feat_tensors_bool + 0*(1-selected_num_feat_tensors_bool)
     # if not eval:
     #     if not is_ppo:
@@ -1184,8 +1184,8 @@ def forward_main0_opt(net, hx, eval, epsilon, program, outbound_mask_ls, atom, p
     else:
         selected_feat_probs, selected_Q_feat, op1_feat_occur_mat, op2_feat_occur_mat, further_selection_masks = mask_atom_representation1(X_pd_full, net.topk_act, net.feat_group_num, net.op_start_pos, program, outbound_mask_ls, selected_feat_logit, init=init)
 
-    if len(net.removed_feat_ls) > 0:
-        selected_Q_feat, selected_feat_probs = down_weight_removed_feats(net, selected_Q_feat, selected_feat_probs, net.removed_feat_ls)
+    # if len(net.removed_feat_ls) > 0:
+    #     selected_Q_feat, selected_feat_probs = down_weight_removed_feats(net, selected_Q_feat, selected_feat_probs, net.removed_feat_ls)
     if abnormal_feature_indicator is not None:
         if init:
             selected_feat_probs = down_weight_features_not_abnormal(selected_feat_probs, abnormal_feature_indicator)
@@ -1332,12 +1332,12 @@ def forward_main0_opt(net, hx, eval, epsilon, program, outbound_mask_ls, atom, p
 
     pred_probs_vals = (torch.softmax(pred,dim=-1) + 1e-5)*pred_out_mask
     pred_Q_vals = torch.tanh(pred)*pred_out_mask + (min_Q_val)*(1 - pred_out_mask)
-    if net.prefer_smaller_range:
+    # if net.prefer_smaller_range:
         
-        regularized_coeff = [torch.exp(-net.prefer_smaller_range_coeff*(feat_val[:,k].view(-1,1) - net.selected_vals.view(1,-1))**2) for k in range(net.topk_act)]
-        regularized_coeff = torch.stack(regularized_coeff, dim=1)
-        pred_probs_vals = pred_probs_vals*regularized_coeff
-        pred_Q_vals = torch.tanh(pred)*pred_out_mask*regularized_coeff + (min_Q_val)*(1 - pred_out_mask*regularized_coeff)
+    #     regularized_coeff = [torch.exp(-net.prefer_smaller_range_coeff*(feat_val[:,k].view(-1,1) - net.selected_vals.view(1,-1))**2) for k in range(net.topk_act)]
+    #     regularized_coeff = torch.stack(regularized_coeff, dim=1)
+    #     pred_probs_vals = pred_probs_vals*regularized_coeff
+    #     pred_Q_vals = torch.tanh(pred)*pred_out_mask*regularized_coeff + (min_Q_val)*(1 - pred_out_mask*regularized_coeff)
     
     if abnormal_feature_indicator is not None and activated_indicator is not None:
         if not init:
@@ -1545,8 +1545,8 @@ def forward_main0_2(net, hx, eval, epsilon, program, outbound_mask_ls, atom, pat
     else:
         selected_feat_probs, selected_Q_feat, op1_feat_occur_mat, op2_feat_occur_mat = mask_atom_representation1(net.topk_act, net.feat_group_num, net.op_start_pos, program, outbound_mask_ls, selected_feat_logit, init=init)
 
-    if len(net.removed_feat_ls) > 0:
-        selected_Q_feat, selected_feat_probs = down_weight_removed_feats(net, selected_Q_feat, selected_feat_probs, net.removed_feat_ls)
+    # if len(net.removed_feat_ls) > 0:
+    #     selected_Q_feat, selected_feat_probs = down_weight_removed_feats(net, selected_Q_feat, selected_feat_probs, net.removed_feat_ls)
 
     if not eval:
         if not is_ppo:
@@ -1666,12 +1666,12 @@ def forward_main0_2(net, hx, eval, epsilon, program, outbound_mask_ls, atom, pat
 
     pred_probs_vals = (torch.softmax(pred,dim=-1) + 1e-5)*pred_out_mask
     pred_Q_vals = torch.tanh(pred)*pred_out_mask + (min_Q_val)*(1 - pred_out_mask)
-    if net.prefer_smaller_range:
+    # if net.prefer_smaller_range:
         
-        regularized_coeff = [torch.exp(-net.prefer_smaller_range_coeff*(feat_val[:,k].view(-1,1) - net.selected_vals.view(1,-1))**2) for k in range(net.topk_act)]
-        regularized_coeff = torch.stack(regularized_coeff, dim=1)
-        pred_probs_vals = pred_probs_vals*regularized_coeff
-        pred_Q_vals = torch.tanh(pred)*pred_out_mask*regularized_coeff + (min_Q_val)*(1 - pred_out_mask*regularized_coeff)
+    #     regularized_coeff = [torch.exp(-net.prefer_smaller_range_coeff*(feat_val[:,k].view(-1,1) - net.selected_vals.view(1,-1))**2) for k in range(net.topk_act)]
+    #     regularized_coeff = torch.stack(regularized_coeff, dim=1)
+    #     pred_probs_vals = pred_probs_vals*regularized_coeff
+    #     pred_Q_vals = torch.tanh(pred)*pred_out_mask*regularized_coeff + (min_Q_val)*(1 - pred_out_mask*regularized_coeff)
     # pred_Q_vals = pred_Q_vals*selected_num_feat_tensors_bool + 0*(1-selected_num_feat_tensors_bool)
     # if not eval:
     #     if not is_ppo:
@@ -2759,16 +2759,16 @@ class RLSynthesizerNetwork_mlp(nn.Module):
             self.discretize_feat_value_count = len(list(self.feat_bound_point_ls.values())[0])
 
         print("discrete feat value count::", self.discretize_feat_value_count)
-        self.feat_group_names = feat_group_names
-        self.removed_feat_ls = removed_feat_ls
-        self.prefer_smaller_range=args.prefer_smaller_range
-        self.prefer_smaller_range_coeff = args.prefer_smaller_range_coeff
-        if self.prefer_smaller_range:
-            self.selected_vals = torch.tensor([k/(self.discretize_feat_value_count-1) for k in range(self.discretize_feat_value_count)]).to(DEVICE)
-        if feat_group_names is None:
-            self.init_without_feat_groups(lang,  args, model_config["latent_size"], num_feat_count, category_sum_count, feat_range_mappings, continue_act=continue_act)
-        else:
-            self.init_with_feat_groups(lang,  args, model_config["latent_size"], feat_range_mappings, continue_act=continue_act, feat_group_names=feat_group_names)
+        # self.feat_group_names = feat_group_names
+        # self.removed_feat_ls = removed_feat_ls
+        # self.prefer_smaller_range=args.prefer_smaller_range
+        # self.prefer_smaller_range_coeff = args.prefer_smaller_range_coeff
+        # if self.prefer_smaller_range:
+        #     self.selected_vals = torch.tensor([k/(self.discretize_feat_value_count-1) for k in range(self.discretize_feat_value_count)]).to(DEVICE)
+        # if feat_group_names is None:
+        self.init_without_feat_groups(lang,  args, model_config["latent_size"], num_feat_count, category_sum_count, feat_range_mappings, continue_act=continue_act)
+        # else:
+        #     self.init_with_feat_groups(lang,  args, model_config["latent_size"], feat_range_mappings, continue_act=continue_act, feat_group_names=feat_group_names)
 
     # def prediction_to_atom(self, pred:dict):
     #     return {i:self.grammar_num_to_token_val[i][torch.argmax(v).item()] for i,v in pred.items()}
@@ -3637,11 +3637,11 @@ class RLSynthesizerNetwork_mlp2(nn.Module):
         else:
             self.discretize_feat_value_count = len(list(self.feat_bound_point_ls.values())[0])
         self.feat_group_names = feat_group_names
-        self.removed_feat_ls = removed_feat_ls
-        self.prefer_smaller_range=prefer_smaller_range
-        self.prefer_smaller_range_coeff = prefer_smaller_range_coeff
-        if self.prefer_smaller_range:
-            self.selected_vals = torch.tensor([k/(self.discretize_feat_value_count-1) for k in range(self.discretize_feat_value_count)]).to(DEVICE)
+        # self.removed_feat_ls = removed_feat_ls
+        # self.prefer_smaller_range=prefer_smaller_range
+        # self.prefer_smaller_range_coeff = prefer_smaller_range_coeff
+        # if self.prefer_smaller_range:
+        #     self.selected_vals = torch.tensor([k/(self.discretize_feat_value_count-1) for k in range(self.discretize_feat_value_count)]).to(DEVICE)
         # if feat_group_names is None:
         self.init_without_feat_groups(lang,  program_max_len, latent_size, dropout_p, num_feat_count, category_sum_count, feat_range_mappings, topk_act=topk_act, continue_act=continue_act)
         # else:
@@ -4720,7 +4720,7 @@ class RLSynthesizerNetwork_transformer(nn.Module):
     #     # self.op_selector = torch.nn.Linear(latent_size + self.program_max_len*self.ATOM_VEC_LENGTH + self.num_feat_len, self.op_num)
         
     #     self.to(device=DEVICE)
-    # def init_with_feat_groups(self,lang,  program_max_len, latent_size, tf_latent_size, dropout_p, feat_range_mappings, numeric_count, category_count, has_embeddings=False,pretrained_model_path=None, topk_act=1, continue_act=False, feat_group_names=None):
+    def init_with_feat_groups(self,lang,  program_max_len, latent_size, tf_latent_size, dropout_p, feat_range_mappings, numeric_count, category_count, has_embeddings=False,pretrained_model_path=None, topk_act=1, continue_act=False, feat_group_names=None):
         super(RLSynthesizerNetwork_transformer, self).__init__()
         self.topk_act = topk_act
         self.lang = lang
@@ -5162,9 +5162,9 @@ class RLSynthesizerNetwork_transformer(nn.Module):
 
     def __init__(self, args, lang, model_config, rl_config,  feat_range_mappings, numeric_count, category_count, has_embeddings=False, continue_act=False, feat_group_names=None, removed_feat_ls=None):
         self.feat_group_names = feat_group_names
-        self.prefer_smaller_range = args.prefer_smaller_range
-        self.prefer_smaller_range_coeff = args.prefer_smaller_range_coeff
-        self.removed_feat_ls = removed_feat_ls
+        # self.prefer_smaller_range = args.prefer_smaller_range
+        # self.prefer_smaller_range_coeff = args.prefer_smaller_range_coeff
+        # self.removed_feat_ls = removed_feat_ls
         self.latent_size = model_config["latent_size"]
         self.feat_bound_point_ls = args.feat_bound_point_ls
         if self.feat_bound_point_ls is None:
@@ -5172,9 +5172,9 @@ class RLSynthesizerNetwork_transformer(nn.Module):
         else:
             self.discretize_feat_value_count = len(list(self.feat_bound_point_ls.values())[0])
         print("discrete feat value count::", self.discretize_feat_value_count)
-        if self.prefer_smaller_range:
-            self.selected_vals = torch.tensor([k/(self.discretize_feat_value_count-1) for k in range(self.discretize_feat_value_count)]).to(DEVICE)
-        self.method_two = args.method_two
+        # if self.prefer_smaller_range:
+        #     self.selected_vals = torch.tensor([k/(self.discretize_feat_value_count-1) for k in range(self.discretize_feat_value_count)]).to(DEVICE)
+        # self.method_two = args.method_two
         # if not method_two:
         #     if feat_group_names is None:
         #         self.init_without_feat_groups(lang,  program_max_len, latent_size, tf_latent_size, dropout_p, feat_range_mappings, numeric_count, category_count, has_embeddings=has_embeddings,pretrained_model_path=pretrained_model_path, topk_act=topk_act, continue_act=continue_act)

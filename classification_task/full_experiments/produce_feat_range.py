@@ -28,7 +28,7 @@ from rl_enc_dec.ehr_lang import *
 
 
 from datetime import datetime
-from datasets.EHR_datasets import EHRDataset, read_cancer_data, one, two, three, four, seven
+from datasets.EHR_datasets import EHRDataset, read_data, one, two, three, four, seven
 
 import math
 
@@ -465,7 +465,7 @@ if __name__ == "__main__":
     os.environ["PYTHONHASHSEED"] = str(args.seed)
 
     rl_config, model_config = load_configs(args)
-    train_data, valid_data, test_data, _ = read_cancer_data(args.data_folder, dataset_name=args.dataset_name)
+    train_data, valid_data, test_data, _ = read_data(args.data_folder, dataset_name=args.dataset_name)
     if args.group_aware:
         root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         with open(os.path.join(root_dir, "feature_group_names"), "rb") as f:

@@ -5,7 +5,7 @@ import os, sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from datasets.EHR_datasets import read_cancer_data
+from datasets.EHR_datasets import read_data
 from rl_enc_dec.ehr_lang import *
 import pickle
 
@@ -91,7 +91,7 @@ def get_feature_name_groups(columns, feature_id_groups):
 if __name__ == "__main__":
     data_folder = "/data6/wuyinjun/cancer_data/"
     
-    train_data, valid_data, test_data, _ = read_cancer_data(data_folder)
+    train_data, valid_data, test_data, _ = read_data(data_folder)
 
     selected_feats = train_data.columns
     

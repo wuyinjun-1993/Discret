@@ -5,7 +5,7 @@ import os,sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from parse_args import *
-from classification_task.datasets.EHR_datasets import read_cancer_data, EHRDataset, create_train_val_test_datasets
+from classification_task.datasets.EHR_datasets import read_data, EHRDataset, create_train_val_test_datasets
 from rl_enc_dec.ehr_lang import *
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from miracle_local.impute import impute_train_eval_all
 
 from feat_encoder.ft_transformer0 import FTTransformer, Transformer_wrapper
-from classification_task.datasets.EHR_datasets import obtain_feat_range_mappings, obtain_numeric_categorical_value_count, synthetic_lang_mappings, pred_mortality_feat
+# from classification_task.datasets.EHR_datasets import obtain_feat_range_mappings, obtain_numeric_categorical_value_count , synthetic_lang_mappings, pred_mortality_feat
 from tqdm import tqdm
 
 from sklearn.metrics import recall_score, f1_score, roc_auc_score
@@ -23,6 +23,9 @@ import rl_enc_dec.synthetic_lang as synthetic_lang
 from create_language import *
 import shap
 import json
+import classification_task.full_experiments.rule_lang as rule_lang
+
+
 
 def obtain_embeddings_over_data(args, net, train_dataset):
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, collate_fn = EHRDataset.collate_fn, shuffle=False)
@@ -84,7 +87,7 @@ def evaluate_net(args, net, test_loader):
         y_logit_ls = []
         for val in tqdm(test_loader):
             # (all_other_pats_ls, X_pd_ls, X, _, (X_num, X_cat), _), y = val
-            (all_other_pats_ls, _, X_pd_ls, X, _, _, (X_num, X_cat)), y = val
+            (all_other_pats_ls, _, X_pd_ls, X, _, _, (X_num, X_cat),_), y = val
             X = X.to(args.device)
             y = y.to(args.device)
             X_num = X_num.to(args.device)
@@ -173,13 +176,14 @@ def pretrain_supervised(args, net, train_loader, valid_loader, test_loader, opti
     best_val_accuracy = -1
     best_test_auc_score = -1
     best_test_accuracy = -1
-    
+    val_accuracy, val_auc_score = evaluate_net(args, net, valid_loader)
     for e in range(args.epochs):
         print("start training at epoch " + str(e))
         avg_loss = 0
         count = 0
         for val in tqdm(train_loader):
-            (all_other_pats_ls, _, X_pd_ls, X, _, _, (X_num, X_cat)), y = val
+            # (all_other_pats2, appts2, X, idx, appts, all_other_pats, (X_num, X_cat), (abnormal_feature_indicator, activated_indicator)), y
+            (all_other_pats_ls, _, X_pd_ls, X, _, _, (X_num, X_cat), _), y = val
             # (origin_all_other_pats_ls, origin_all_other_pats_ls2, X_pd_ls2, X, X_sample_ids, X_pd_ls, (X_num, X_cat)), y = val
             X = X.to(args.device)
             y = y.to(args.device)
@@ -233,7 +237,9 @@ if __name__ == "__main__":
 
     rl_config, model_config = load_configs(args)
 
-    train_data, valid_data, test_data, program_max_len = read_cancer_data(args.data_folder, dataset_name=args.dataset_name)
+    train_data, valid_data, test_data, label_column, id_column = read_data(args.data_folder, dataset_name=args.dataset_name)
+    args.label_cln = label_column
+    args.id_cln = id_column
 
     # col_str = None
     # for col in train_data.columns:
@@ -244,7 +250,6 @@ if __name__ == "__main__":
     # print(col_str)
     program_max_len = args.program_max_len
     print("program max len::", program_max_len)
-    patient_max_appts = 1
     # train_dataset = EHRDataset(data= train_data, drop_cols=DROP_FEATS, patient_max_appts = patient_max_appts, balance=True)
     # train_valid_dataset = EHRDataset(data= pd.concat([train_data, valid_data]), drop_cols=DROP_FEATS, patient_max_appts = patient_max_appts, balance=True)
     # valid_dataset = EHRDataset(data = valid_data, drop_cols=DROP_FEATS, patient_max_appts = patient_max_appts, balance=False)
@@ -255,8 +260,8 @@ if __name__ == "__main__":
     # train_dataset.rescale_data(feat_range_mappings) 
     # valid_dataset.rescale_data(feat_range_mappings) 
     # test_dataset.rescale_data(feat_range_mappings) 
-    lang = Language(data=train_data, id_attr="PAT_ID", outcome_attr="label", treatment_attr=None, text_attr=None, precomputed=None, lang=synthetic_lang_mappings[args.dataset_name])
-    train_dataset, train_valid_dataset, valid_dataset, test_dataset, feat_range_mappings = create_train_val_test_datasets(train_data, valid_data, test_data, patient_max_appts, synthetic_lang_mappings, args)
+    lang = Language(data=train_data, id_attr=args.id_cln, outcome_attr=args.label_cln, treatment_attr=None, text_attr=None, precomputed=None, lang=rule_lang)
+    train_dataset, train_valid_dataset, valid_dataset, test_dataset, feat_range_mappings = create_train_val_test_datasets(train_data, valid_data, test_data, rule_lang, args)
     dataset_folder = os.path.join(args.data_folder, args.dataset_name)
     os.makedirs(dataset_folder, exist_ok=True)
     train_data_file_path  = os.path.join(dataset_folder, "train_transformed_feat")
@@ -296,11 +301,15 @@ if __name__ == "__main__":
     valid_dataset.create_imputed_data()
     test_dataset.create_imputed_data()
     train_valid_dataset.create_imputed_data()
+    
+    unique_thres_count = rl_config["discretize_feat_value_count"]
+    
+    train_dataset.set_abnormal_feature_vals(None, None, unique_thres_count)
+    valid_dataset.set_abnormal_feature_vals(None, None, unique_thres_count)
+    test_dataset.set_abnormal_feature_vals(None, None, unique_thres_count)
 
 
 
-    if args.dataset_name == four:
-        lang.syntax["num_feat"][pred_mortality_feat] = [pred_mortality_feat]
     transformer_net = construct_model(model_config, lang, train_dataset.cat_unique_val_count_ls)
     transformer_net = transformer_net.to(args.device)
 

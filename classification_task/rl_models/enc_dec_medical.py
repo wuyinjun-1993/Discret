@@ -1484,7 +1484,7 @@ class RLSynthesizerNetwork_transformer0(nn.Module):
 
 
 
-    def __init__(self, lang,  program_max_len, latent_size, tf_latent_size, dropout_p, feat_range_mappings, numeric_count, category_count, has_embeddings=False,pretrained_model_path=None, topk_act=1, continue_act=False, feat_group_names=None, removed_feat_ls=None, prefer_smaller_range=False, prefer_smaller_range_coeff=0.5, method_two=True, args = None):
+    def __init__(self, lang,  program_max_len, latent_size, tf_latent_size, dropout_p, feat_range_mappings, numeric_count, category_count, has_embeddings=False,pretrained_model_path=None, topk_act=1, continue_act=False, feat_group_names=None, removed_feat_ls=None, prefer_smaller_range=False, prefer_smaller_range_coeff=0.5):
         self.feat_group_names = feat_group_names
         self.prefer_smaller_range = prefer_smaller_range
         self.prefer_smaller_range_coeff = prefer_smaller_range_coeff

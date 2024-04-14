@@ -26,12 +26,9 @@ import logging
 
 # from rl_enc_dec.ehr_lang import *
 
-import synthetic_lang_one
-import synthetic_lang_two
-import synthetic_lang_three
 
 from datetime import datetime
-from datasets.EHR_datasets import EHRDataset, read_cancer_data, obtain_feat_range_mappings, obtain_numeric_categorical_value_count
+from datasets.EHR_datasets import EHRDataset, read_data, obtain_feat_range_mappings, obtain_numeric_categorical_value_count
 
 from full_experiments.pretrain_main import obtain_embeddings_over_data, construct_model
 
@@ -63,7 +60,7 @@ if __name__ == "__main__":
     os.environ["PYTHONHASHSEED"] = str(args.seed)
 
     rl_config, model_config = load_configs(args)
-    train_data, valid_data, test_data, _ = read_cancer_data(args.data_folder, dataset_name=args.dataset_name)
+    train_data, valid_data, test_data, _ = read_data(args.data_folder, dataset_name=args.dataset_name)
 
     removed_cols_ls = get_all_attributes_with_std_suffix(train_data.columns)
 

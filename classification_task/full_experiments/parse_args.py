@@ -5,7 +5,7 @@ import os, yaml, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from classification_task.datasets.EHR_datasets import one, two, three, four, five, six, seven
+# from classification_task.datasets.EHR_datasets import one, two, three, four, five, six, seven
 
 
 def load_configs(args, root_dir=None):
@@ -25,8 +25,9 @@ def load_configs(args, root_dir=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="parse args")
-    parser.add_argument('--data_folder', type=str, default="/data6/wuyinjun/cancer_data/", help="std of the initial phi table")
-    parser.add_argument('--dataset_name', type=str, default=one, choices=[one,two,three, four, five, six, seven], help="std of the initial phi table")
+    parser.add_argument('--data_folder', type=str, default="data/", help="std of the initial phi table")
+    # parser.add_argument('--dataset_name', type=str, default=one, choices=[one,two,three, four, five, six, seven], help="std of the initial phi table")
+    parser.add_argument('--dataset_name', type=str, default="cardio", help="std of the initial phi table")
     parser.add_argument('--method', type=str, choices=["ours", "dt", "rf", "gb"], help="std of the initial phi table")
     parser.add_argument('--seed', type=int, default=0, help="std of the initial phi table")
     parser.add_argument('--batch_size', type=int, default=128, help="std of the initial phi table")
@@ -62,20 +63,20 @@ def parse_args():
 
 
     parser.add_argument('--is_log', action='store_true', help='specifies what features to extract')
-    parser.add_argument('--method_two', action='store_true', help='specifies what features to extract')
-    parser.add_argument('--group_aware', action='store_true', help='specifies what features to extract')
-    parser.add_argument('--do_medical', action='store_true', help='specifies what features to extract')
+    parser.add_argument('--log_file_name', type=str, default="logs", help='specifies what features to extract')
+    # parser.add_argument('--method_two', action='store_true', help='specifies what features to extract')
+    # parser.add_argument('--group_aware', action='store_true', help='specifies what features to extract')
+    # parser.add_argument('--do_medical', action='store_true', help='specifies what features to extract')
     # parser.add_argument('--continue_act', action='store_true', help='specifies what features to extract')
     # parser.add_argument('--fix_pretrained_model', action='store_true', help='specifies what features to extract')
     parser.add_argument('--use_precomputed_thres', action='store_true', help='specifies what features to extract')
 
 
-    parser.add_argument('--prefer_smaller_range', action='store_true', help='specifies what features to extract')
+    # parser.add_argument('--prefer_smaller_range', action='store_true', help='specifies what features to extract')
     parser.add_argument('--use_kg', action='store_true', help='incorporate domain knowledge')
-    parser.add_argument('--prefer_smaller_range_coeff', type=float, default=0.5, help='specifies what features to extract')
+    # parser.add_argument('--prefer_smaller_range_coeff', type=float, default=0.5, help='specifies what features to extract')
     
-    parser.add_argument('--treatment_var_ids', nargs='+', type=int, help='List of integers', default=[0])
-    parser.add_argument('--db_backend', type=str, default="numpy", help='specifies what features to extract', choices=["tql", "numpy", "tql_opt", "Scallop"])
+    # parser.add_argument('--treatment_var_ids', nargs='+', type=int, help='List of integers', default=[0])
     # parser.add_argument('--treatment_var_ids', type=list, default=0.5, help='specifies what features to extract')
     # timesteps_per_batch
     # 
