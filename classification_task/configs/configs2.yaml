@@ -1,0 +1,27 @@
+model:
+  mlp:
+    latent_size: 30
+  transformer:
+    latent_size: 30
+    tf_latent_size: 30
+    pretrained_model_path: "/data6/wuyinjun/cancer_data/logs/pretrain_0/pretrain_net_0"
+    fix_pretrained_model: true
+    depth: 3
+    heads: 4
+    attn_dropout: 0.1
+    ff_dropout: 0.1
+rl:
+  dqn:
+    mem_sample_size: 16
+    replay_memory_capacity: 5000
+    epsilon: 0.2
+    epsilon_falloff: 0.9
+    gamma: 0.999
+    target_update: 20
+    discretize_feat_value_count: 20
+  ppo:
+    n_updates_per_iteration: 10
+    clip: 0.1
+    timesteps_per_batch: 5
+    continue_act: false
+    gamma: 0.999
