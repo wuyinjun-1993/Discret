@@ -1,1 +1,3 @@
 data/cardio/*_feat
+logs/
+**/__pycache__/
