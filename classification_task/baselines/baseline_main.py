@@ -81,7 +81,7 @@ def construct_feat_label_mat(dataset, var_clns=None):
     # label_mat = np.array(list(full_data["label"]))
     label_mat = dataset.labels.numpy()
     
-    return feat_mat, label_mat
+    return feat_mat, label_mat.reshape(-1,1).astype(int)
 
 
 def remove_empty_classes(train_labels, valid_labels, test_labels):

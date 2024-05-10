@@ -40,51 +40,7 @@ from utils_mortality.metrics import metrics_maps
 from trainer import Trainer_all
 
 from preprocess_abnormal import generate_abnormal_value_indicator_mat
-
-
-def evaluate_performance(pred_prob_labels, test_labels, multi_label=False):
-    # roc_auc_score(y_true_array, y_pred_array)
-    if not multi_label:
-        auc_score2 = roc_auc_score(test_labels, pred_prob_labels[:,1])
-    else:
-        auc_score2 = roc_auc_score(test_labels, pred_prob_labels[:,1], average=None)
-
-    # auc_score = roc_auc_score(test_labels, (pred_prob_labels[:,1]>0.5).astype(float))
-
-    pred_prob_labels_int = (pred_prob_labels[:,1]>0.5).astype(int)
-
-    accuracy = np.mean(test_labels.reshape(-1) == pred_prob_labels_int.reshape(-1))
-
-    logger = logging.getLogger()
-
-    # desc = "auc score::" + str(auc_score)
-    # print(desc)
-
-    # logger.log(level=logging.DEBUG, msg = desc)
-
-
-    desc = "auc score ::" + str(auc_score2)
-    print(desc)
-    logger.log(level=logging.DEBUG, msg = desc)
-
-    if multi_label:
-        desc = "auc score mean::" + str(np.mean(auc_score2))
-        print(desc)
-        logger.log(level=logging.DEBUG, msg = desc)
-
-    desc = "accuracy::" + str(accuracy)
-    print(desc)
-    logger.log(level=logging.DEBUG, msg = desc)
-    
-    additional_score_str = ""
-    full_y_pred_prob_array = pred_prob_labels#np.stack([1 - y_pred_prob_array.reshape(-1), y_pred_prob_array.reshape(-1)], axis=1)
-    for metric_name in metrics_maps:
-        if len(full_y_pred_prob_array.shape) == 3:
-            curr_score = metrics_maps[metric_name](test_labels.reshape(-1),np.transpose(full_y_pred_prob_array, (0,2,1)).reshape(-1,2))
-        else:
-            curr_score = metrics_maps[metric_name](test_labels.reshape(-1),full_y_pred_prob_array)
-        additional_score_str += metric_name + ": " + str(curr_score) + " "
-    print(additional_score_str)
+from utils_mortality.evaluation_utils import evaluate_performance
 
 def pre_compute_thresholds(cols, drop_cols, bin_size=20):
     col_thres_mappings = dict()
@@ -146,7 +102,7 @@ if __name__ == "__main__":
     train_dataset, train_valid_dataset, valid_dataset, test_dataset, feat_range_mappings = create_train_val_test_datasets(train_data, valid_data, test_data, rule_lang, args)
     
     # if not os.path.exists(train_data_file_path) or not os.path.exists(valid_data_file_path) or not os.path.exists(train_valid_data_file_path) or not os.path.exists(test_data_file_path):  
-    if not os.path.exists(train_data_file_path) or not os.path.exists(valid_data_file_path) or not os.path.exists(test_data_file_path) or not os.path.exists(train_feat_file_path) or not os.path.exists(valid_feat_file_path) or not os.path.exists(test_feat_file_path):
+    if True: #not os.path.exists(train_data_file_path) or not os.path.exists(valid_data_file_path) or not os.path.exists(test_data_file_path) or not os.path.exists(train_feat_file_path) or not os.path.exists(valid_feat_file_path) or not os.path.exists(test_feat_file_path):
     
     
         
@@ -325,7 +281,7 @@ if __name__ == "__main__":
         # (torch.tensor(feat_range_mappings["ALBUMIN..last"])[1] - torch.tensor(feat_range_mappings["ALBUMIN..last"])[0])*torch.tensor(feat_bound_point_ls["ALBUMIN..last"]) + torch.tensor(feat_range_mappings["ALBUMIN..last"])[0]
         trainer.run()
     elif args.method == "dt":
-        multi_label=False
+        multi_label=(len(torch.unique(train_dataset.labels)) > 2)
         train_feat, train_labels = construct_feat_label_mat(train_valid_dataset)
         valid_feat, valid_labels = construct_feat_label_mat(valid_dataset)
         test_feat, test_labels = construct_feat_label_mat(test_dataset)
@@ -338,7 +294,7 @@ if __name__ == "__main__":
         evaluate_performance(pred_prob_labels, test_labels, multi_label=multi_label)
     
     elif args.method == "gb":
-        multi_label=False #(args.dataset_name == four)
+        multi_label=(len(torch.unique(train_dataset.labels)) > 2)
         train_feat, train_labels = construct_feat_label_mat(train_valid_dataset)
         valid_feat, valid_labels = construct_feat_label_mat(valid_dataset)
         test_feat, test_labels = construct_feat_label_mat(test_dataset)
@@ -353,7 +309,7 @@ if __name__ == "__main__":
         evaluate_performance(pred_prob_labels, test_labels, multi_label=multi_label)
 
     elif args.method == "rf":
-        multi_label=False #(args.dataset_name == four)
+        multi_label=(len(torch.unique(train_dataset.labels)) > 2)
         train_feat, train_labels = construct_feat_label_mat(train_valid_dataset)
         valid_feat, valid_labels = construct_feat_label_mat(valid_dataset)
         test_feat, test_labels = construct_feat_label_mat(test_dataset)

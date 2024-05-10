@@ -25,6 +25,7 @@ import shap
 import json
 import classification_task.full_experiments.rule_lang as rule_lang
 
+from utils_mortality.evaluation_utils import *
 
 
 def obtain_embeddings_over_data(args, net, train_dataset):
@@ -50,7 +51,7 @@ def obtain_embeddings_over_data(args, net, train_dataset):
 
 
 
-def construct_model(model_config, lang, catergory_count_map={}):
+def construct_model(model_config, lang, catergory_count_map={}, dim_out=1):
     numeric_count  = len(lang.syntax["num_feat"]) if "num_feat" in lang.syntax else 0
     # category_count = len(lang.syntax["cat_feat"]) if "cat_feat" in lang.syntax else 0
     # numeric_count, category_count = obtain_numeric_categorical_value_count(lang)
@@ -58,7 +59,7 @@ def construct_model(model_config, lang, catergory_count_map={}):
                 categories = catergory_count_map,      # tuple containing the number of unique values within each category
                 num_continuous = numeric_count,                # number of continuous values
                 dim = model_config["tf_latent_size"],                           # dimension, paper set at 32
-                dim_out = 1,                        # binary prediction, but could be anything
+                dim_out = dim_out,                        # binary prediction, but could be anything
                 depth = model_config["depth"],                          # depth, paper recommended 6
                 heads = model_config["heads"],                          # heads, paper recommends 8
                 attn_dropout = model_config["attn_dropout"],                 # post-attention dropout
@@ -75,7 +76,7 @@ def get_dataloader(train_dataset, valid_dataset, test_dataset):
     return train_loader, valid_loader, test_loader
 
 
-def evaluate_net(args, net, test_loader):
+def evaluate_net(args, net, test_loader, multi_label=False):
     net.eval()
 
     pred_correct = 0
@@ -93,32 +94,38 @@ def evaluate_net(args, net, test_loader):
             X_num = X_num.to(args.device)
             X_cat = X_cat.to(args.device)
             feature_embedding = net(X_cat, X_num, return_embedding=True)
-            y_logits = torch.sigmoid(net.to_logits(feature_embedding))
-            y_pred = (y_logits > 0.5).type(torch.long).view(-1)
-            pred_correct += torch.sum(y.view(-1) == y_pred)
+            if not multi_label:
+                y_logits = torch.sigmoid(net.to_logits(feature_embedding))
+                # y_pred = (y_logits > 0.5).type(torch.long).view(-1)
+            else:
+                y_logits = torch.softmax(net.to_logits(feature_embedding), dim=-1)
+                # y_pred = 
+            # pred_correct += torch.sum(y.view(-1) == y_pred)
             total += y.shape[0]
             y_ls.append(y.view(-1))
-            y_pred_ls.append(y_pred.view(-1))
-            y_logit_ls.append(y_logits.view(-1))
+            # y_pred_ls.append(y_pred.view(-1))
+            y_logit_ls.append(y_logits.view(len(X), -1))
 
-        y_pred_array = torch.cat(y_pred_ls)
+        # y_pred_array = torch.cat(y_pred_ls)
         y_array = torch.cat(y_ls)
         y_logit_ls_array = torch.cat(y_logit_ls)
+        
+        accuracy, auc_score = evaluate_performance(y_logit_ls_array.cpu().numpy(), y_array.cpu().numpy(), multi_label=multi_label)
            
-        auc_score = roc_auc_score(y_array.cpu().numpy(), y_logit_ls_array.cpu().numpy())
+        # auc_score = roc_auc_score(y_array.cpu().numpy(), y_logit_ls_array.cpu().numpy())
 
-        accuracy = pred_correct/total*1.0
+        # accuracy = pred_correct/total*1.0
 
-        print("Test accuracy::", accuracy)
+        # print("Test accuracy::", accuracy)
 
-        print("auc score::", auc_score)
+        # print("auc score::", auc_score)
 
-        print_additional_metrics(y_logit_ls_array.cpu().numpy(), y_array.cpu().numpy())
+        # print_additional_metrics(y_logit_ls_array.cpu().numpy(), y_array.cpu().numpy())
 
 
     net.train()
     
-    return accuracy.cpu().item(), auc_score
+    return accuracy, auc_score
 
 def evalute_shap(args, net, test_loader, tree_depth=2):
     wrapped_net = Transformer_wrapper(net, len(test_loader.dataset.num_cols))
@@ -162,7 +169,7 @@ def evalute_shap(args, net, test_loader, tree_depth=2):
     
 
 
-def pretrain_supervised(args, net, train_loader, valid_loader, test_loader, optimizer, criterion):
+def pretrain_supervised(args, net, train_loader, valid_loader, test_loader, optimizer, criterion, multi_label=False):
     
     # iterator = tqdm(enumerate(train_loader), desc="Training Synthesizer", total=len(train_loader))
     # val_accuracy, val_auc_score = evaluate_net(args, net, valid_loader)
@@ -176,7 +183,7 @@ def pretrain_supervised(args, net, train_loader, valid_loader, test_loader, opti
     best_val_accuracy = -1
     best_test_auc_score = -1
     best_test_accuracy = -1
-    val_accuracy, val_auc_score = evaluate_net(args, net, valid_loader)
+    val_accuracy, val_auc_score = evaluate_net(args, net, valid_loader, multi_label=multi_label)
     for e in range(args.epochs):
         print("start training at epoch " + str(e))
         avg_loss = 0
@@ -190,9 +197,13 @@ def pretrain_supervised(args, net, train_loader, valid_loader, test_loader, opti
             X_num = X_num.to(args.device)
             X_cat = X_cat.to(args.device)
             feature_embedding = net(X_cat, X_num, return_embedding=True)
-            y_logits = torch.sigmoid(net.to_logits(feature_embedding))
-
+            if not multi_label:
+                y_logits = torch.sigmoid(net.to_logits(feature_embedding))
+            else:
+                y_logits = torch.softmax(net.to_logits(feature_embedding), dim=-1)
+                y = y.long().view(-1)
             loss = criterion(y_logits, y)
+                
             count += len(y)
             avg_loss += loss.item()*len(y)
             optimizer.zero_grad()
@@ -205,9 +216,9 @@ def pretrain_supervised(args, net, train_loader, valid_loader, test_loader, opti
         avg_loss /= count
         print("epoch %d, avg loss %f"%(e, avg_loss))
 
-        val_accuracy, val_auc_score = evaluate_net(args, net, valid_loader)
-        test_accuracy, test_auc_score = evaluate_net(args, net, test_loader)
-        if val_auc_score > best_val_auc_score and val_accuracy > 0.8:
+        val_accuracy, val_auc_score = evaluate_net(args, net, valid_loader, multi_label=multi_label)
+        test_accuracy, test_auc_score = evaluate_net(args, net, test_loader, multi_label=multi_label)
+        if val_auc_score > best_val_auc_score:
             best_val_accuracy = val_accuracy
             best_test_accuracy = test_accuracy
             best_val_auc_score = val_auc_score
@@ -271,7 +282,7 @@ if __name__ == "__main__":
     train_feat_file_path  = os.path.join(dataset_folder, "train_feat")
     valid_feat_file_path  = os.path.join(dataset_folder, "valid_feat")
     test_feat_file_path  = os.path.join(dataset_folder, "test_feat")
-    if not os.path.exists(train_data_file_path) or not os.path.exists(valid_data_file_path) or not os.path.exists(test_data_file_path) or not os.path.exists(train_feat_file_path) or not os.path.exists(valid_feat_file_path) or not os.path.exists(test_feat_file_path):
+    if True:#not os.path.exists(train_data_file_path) or not os.path.exists(valid_data_file_path) or not os.path.exists(test_data_file_path) or not os.path.exists(train_feat_file_path) or not os.path.exists(valid_feat_file_path) or not os.path.exists(test_feat_file_path):
         if torch.any(torch.isnan(train_dataset.transformed_features)):
             train_dataset.transformed_features, valid_dataset.transformed_features, test_dataset.transformed_features = impute_train_eval_all(train_dataset.transformed_features, valid_dataset.transformed_features, test_dataset.transformed_features)
             # train_valid_dataset.transformed_features, miracle = impute_train_eval(train_valid_dataset.transformed_features.numpy(), miracle=miracle)
@@ -308,17 +319,23 @@ if __name__ == "__main__":
     valid_dataset.set_abnormal_feature_vals(None, None, unique_thres_count)
     test_dataset.set_abnormal_feature_vals(None, None, unique_thres_count)
 
+    multi_label = (len(torch.unique(train_dataset.labels)) > 2)
 
-
-    transformer_net = construct_model(model_config, lang, train_dataset.cat_unique_val_count_ls)
+    if not multi_label:
+        transformer_net = construct_model(model_config, lang, train_dataset.cat_unique_val_count_ls)
+    else:
+        transformer_net = construct_model(model_config, lang, train_dataset.cat_unique_val_count_ls, dim_out = len(torch.unique(train_dataset.labels)))
     transformer_net = transformer_net.to(args.device)
 
     train_loader, valid_loader, test_loader = get_dataloader(train_dataset, valid_dataset, test_dataset)
 
-    criterion = torch.nn.BCELoss()
+    if not multi_label:
+        criterion = torch.nn.BCELoss()
+    else:
+        criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(transformer_net.parameters(), lr=args.learning_rate)
     if args.cached_model_name is not None:
         transformer_net.load_state_dict(torch.load(args.cached_model_name))
         # evalute_shap(args, transformer_net, test_loader)
     # transformer_net.load_state_dict(torch.load("/data6/wuyinjun/cancer_data_four/logs2/pretrain/pretrain_net_299"))
-    pretrain_supervised(args, transformer_net, train_loader, valid_loader, test_loader, optimizer, criterion)
+    pretrain_supervised(args, transformer_net, train_loader, valid_loader, test_loader, optimizer, criterion, multi_label=multi_label)

@@ -226,7 +226,7 @@ class Trainer_all:
         self.valid_feat_embeddings=valid_feat_embeddings
         self.test_feat_embeddings=test_feat_embeddings
         # self.do_medical = args.do_medical
-        self.multilabel = False #(args.dataset_name == four)
+        self.multilabel = (len(torch.unique(train_dataset.labels)) > 2)
         if self.is_log:
             self.logger = logging.getLogger()
 
@@ -327,21 +327,30 @@ class Trainer_all:
                     # sub_label_ls.append(-1)
                     # sub_prob_label_ls.append(-1)
                     continue
-                
-                
-                prob_label = torch.sum(curr_label_ls)/len(curr_label_ls)
-                label = (prob_label > 0.5).long().item()
+                n_labels = len(torch.unique(self.lang.labels))
+                if not self.multilabel:
+                    prob_label = torch.sum(curr_label_ls)/len(curr_label_ls)
+                    label = (prob_label > 0.5).long().item()
+                else:
+                    
+                    local_prob_label_ls = []
+                    for cid in range(n_labels):
+                        prob_label = torch.sum(curr_label_ls == cid).item()*1.0/len(curr_label_ls)
+                        local_prob_label_ls.append(prob_label)
+                    prob_label = np.array(local_prob_label_ls)
+                    label = np.argmax(prob_label)
                 
                 sub_label_ls.append(label)
                 sub_prob_label_ls.append(prob_label)
             if self.multilabel:
                 if len(sub_label_ls) <= 0:
-                    label_ls.append(np.array([-1]*len(self.train_dataset.data[self.label_cln][0])))
-                    prob_label_ls.append(np.array([-1]*len(self.train_dataset.data[self.label_cln][0])))
+                     #(np.array([-1]*len(self.train_dataset.data[self.label_cln][0])))
+                    prob_label = np.random.rand(n_labels)
+                    prob_label_ls.append(prob_label)  #(np.array([-1]*len(self.train_dataset.data[self.label_cln][0])))
                 else:
                     prob_label = np.mean(np.stack(sub_prob_label_ls), axis=0)
                     prob_label_ls.append(prob_label)
-                    label_ls.append((prob_label > 0.5).astype(np.int32))
+                label_ls.append(np.argmax(prob_label))
             else:
                 if len(sub_label_ls) <= 0:    
                     label_ls.append(-1)
@@ -429,13 +438,15 @@ class Trainer_all:
                         sub_rwd_ls.append(torch.sum(curr_label_ls == y)/len(curr_label_ls))
                 else:
                     y = y_ls[idx]
+                    n_labels = len(torch.unique(self.lang.labels))
+                    curr_label_ls = self.lang.labels[data]
                     score_ls = []
-                    total = data['PAT_ID'].nunique()
+                    total = len(curr_label_ls)
                     if total == 0:
-                        sub_rwd_ls.append([0]*y_ls[idx].numel())
+                        sub_rwd_ls.append([0]*n_labels)
                     else:
-                        for cid in range(y_ls[idx].numel()):
-                            curr_same = data.loc[np.array(list(data[self.label_cln]))[:,cid] == y[cid].item()]["PAT_ID"].nunique()
+                        for cid in range(n_labels):
+                            curr_same =  torch.sum(curr_label_ls == cid).item() #data.loc[np.array(list(data[self.label_cln]))[:,cid] == y[cid].item()]["PAT_ID"].nunique()
                             curr_score = curr_same/total
                             score_ls.append(curr_score)
                         # score = score/y_ls[idx].numel()
@@ -1275,8 +1286,12 @@ class Trainer_all:
                                 other_data_booleans_ls = self.lang.evaluate_atom_ls_ls_on_one_patient_with_full_programs_leave_one_out(pat_idx, all_transformed_expr_ls[pat_idx], all_other_pats_ls[pat_idx])
                                 curr_test_y_pred_ls, curr_test_y_pred_prob_ls = self.get_test_decision_from_db_ls_multi2(other_data_booleans_ls)
                                 origin_y_pred = y_pred_prob[pat_idx]
-                                curr_test_y_pred_prob_tensor = torch.tensor(curr_test_y_pred_prob_ls, dtype=torch.float32)
-                                sorted_conjunction_ids = torch.argsort(origin_y_pred - curr_test_y_pred_prob_tensor, descending=True)
+                                if not self.multilabel:
+                                    curr_test_y_pred_prob_tensor = torch.tensor(curr_test_y_pred_prob_ls, dtype=torch.float32)
+                                    sorted_conjunction_ids = torch.argsort(origin_y_pred - curr_test_y_pred_prob_tensor, descending=True)
+                                else:
+                                    curr_test_y_pred_prob_tensor = torch.tensor(curr_test_y_pred_prob_ls, dtype=torch.float32)
+                                    sorted_conjunction_ids = torch.argsort(torch.norm(torch.from_numpy(origin_y_pred) - curr_test_y_pred_prob_tensor, dim=-1), descending=True)
                                 sorted_conjunction_ids_ls.append(sorted_conjunction_ids)
                                     # curr_y_pred_prob_ls = []
                                     # curr_y_pred_ls = []
@@ -1319,8 +1334,10 @@ class Trainer_all:
                                     pat_count = torch.sum(next_all_other_pats_ls[pat_idx][program_idx]).item()
 
                                     # x_pat_sub.to_csv(os.path.join(save_data_path, "patient_" + str(list(X_pd_ls[pat_idx]["PAT_ID"])[0]) + ".csv"))
-                                    
-                                    msg = "Test Epoch {},  Label: {}, Prediction: {}, Match Score:{:7.4f}, Matched Patient Count: {},  Patient Info: {}, Explanation of number {}: {}, importance score {}".format(epoch, int(y[pat_idx]), y_pred[pat_idx], y_pred_prob[pat_idx], pat_count, str(x_pat_sub.to_dict()), int(program_idx), str(next_program_str[pat_idx][program_idx]), sorted_conjunction_ids_ls[pat_idx].tolist())
+                                    if not self.multilabel:
+                                        msg = "Test Epoch {},  Label: {}, Prediction: {}, Match Score:{:7.4f}, Matched Patient Count: {},  Patient Info: {}, Explanation of number {}: {}, importance score {}".format(epoch, int(y[pat_idx]), y_pred[pat_idx], y_pred_prob[pat_idx], pat_count, str(x_pat_sub.to_dict()), int(program_idx), str(next_program_str[pat_idx][program_idx]), sorted_conjunction_ids_ls[pat_idx].tolist())
+                                    else:
+                                        msg = "Test Epoch {},  Label: {}, Prediction: {}, Match Score:{:7.4f}, Matched Patient Count: {},  Patient Info: {}, Explanation of number {}: {}, importance score {}".format(epoch, int(y[pat_idx]), y_pred[pat_idx], y_pred_prob[pat_idx][int(y_pred[pat_idx])], pat_count, str(x_pat_sub.to_dict()), int(program_idx), str(next_program_str[pat_idx][program_idx]), sorted_conjunction_ids_ls[pat_idx].tolist())
                                     self.logger.log(level=logging.DEBUG, msg=msg)
                         # if y == y_pred: success += 1
                         # else: failure += 1
@@ -1361,17 +1378,17 @@ class Trainer_all:
                     y_pred_prob_array = np.stack(y_pred_prob_ls)
                     # y_pred_prob_array = np.concatenate(y_pred_prob_ls, axis = 0)
                     # y_pred_array[y_pred_array < 0] = 0.5
-                    y_pred_prob_array[y_pred_prob_array < 0] = 0.5
+                    # y_pred_prob_array[y_pred_prob_array < 0] = 0.5
                     # if np.sum(y_pred_array == 1) <= 0 or np.sum(y_true_array == 1) <= 0:
                     #     auc_score_2 = 0
                     # else:
-                    selected_label_ids = (np.mean(y_true_array, axis=0) > 0)
+                    # selected_label_ids = (np.mean(y_true_array, axis=0) > 0)
                     try:
-                        auc_score_2 = roc_auc_score(y_true_array[:,selected_label_ids], y_pred_prob_array[:,selected_label_ids], average=None)
+                        auc_score_2 = roc_auc_score(y_true_array, y_pred_prob_array, average=None, multi_class="ovr")
                     except ValueError:
-                        auc_score_2 = np.zeros(y_true_array[selected_label_ids].shape[-1])
+                        auc_score_2 = np.zeros(y_pred_prob_array.shape[-1])
                     # success_rate = (success / len(y_pred_array)) * 100.00
-                    success_rate = np.mean(y_true_array == y_pred_array)*100
+                    success_rate = np.mean(y_true_array.reshape(-1) == y_pred_array.reshape(-1))*100
                     avg_loss = sum_loss/len(y_pred_array)
                     # desc = f"[Test Epoch {epoch}] Avg Loss: {avg_loss}, Success: ({success_rate:.2f}%), auc score list:{auc_score_2.tolist()}, auc score mean:{np.mean(auc_score_2)}"
                     desc = f"[Test Epoch {epoch}] Avg Loss: {avg_loss}, Success: ({success_rate:.2f}%), auc score mean:{np.mean(auc_score_2)}"
@@ -1379,15 +1396,15 @@ class Trainer_all:
         if self.is_log:
             self.logger.log(level=logging.DEBUG, msg = desc)
         
-
-        additional_score_str = ""
-        full_y_pred_prob_array = np.stack([1 - y_pred_prob_array.reshape(-1), y_pred_prob_array.reshape(-1)], axis=1)
-        for metric_name in metrics_maps:
-            curr_score = metrics_maps[metric_name](y_true_array.reshape(-1),full_y_pred_prob_array)
-            additional_score_str += metric_name + ": " + str(curr_score) + " "
-        print(additional_score_str)
-        if self.is_log:
-            self.logger.log(level=logging.DEBUG, msg = additional_score_str)
+        if not self.multilabel:
+            additional_score_str = ""
+            full_y_pred_prob_array = np.stack([1 - y_pred_prob_array.reshape(-1), y_pred_prob_array.reshape(-1)], axis=1)
+            for metric_name in metrics_maps:
+                curr_score = metrics_maps[metric_name](y_true_array.reshape(-1),full_y_pred_prob_array)
+                additional_score_str += metric_name + ": " + str(curr_score) + " "
+            print(additional_score_str)
+            if self.is_log:
+                self.logger.log(level=logging.DEBUG, msg = additional_score_str)
         # Print information
         
         # if exp_y_pred_arr is not None:
@@ -1414,6 +1431,7 @@ class Trainer_all:
         test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, collate_fn = EHRDataset.collate_fn, shuffle=False, drop_last=False)
         # if self.valid_dataset is not None:
         # if self.rl_algorithm == "dqn":
+        self.test_epoch_ls(test_loader, 0, feat_embedding=self.test_feat_embeddings)
         if self.is_log:
             self.test_epoch_ls(test_loader, 0, feat_embedding=self.test_feat_embeddings)
         # train_loader = DataLoader(self.train_dataset, batch_size=self.batch_size, collate_fn = EHRDataset.collate_fn, shuffle=False, drop_last=False)
