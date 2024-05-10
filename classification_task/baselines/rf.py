@@ -88,5 +88,7 @@ def rf_model_pred(feat_mats, gb_random, multi_label=False):
     pred_prob_labels = gb_random.predict_proba(feat_mats)
     if multi_label:
         pred_prob_labels = pred_prob_labels[0]
+    else:
+        pred_prob_labels = pred_prob_labels[:,1]
     #     pred_prob_labels = np.stack(pred_prob_labels, axis=2)
     return pred_labels, pred_prob_labels
