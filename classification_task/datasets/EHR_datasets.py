@@ -75,7 +75,7 @@ def drop_unnecessary_columns(cancer_df, missing_ratio_thres=0.5):
 
 def read_data(data_folder, dataset_name, train_ratio=0.7, valid_ratio=0.1, test_ratio=0.2, select_feat_ratio=-1):
     #  change here if you want to import your own data
-    data_path = os.path.join(data_folder, dataset_name, "cardio_train2.csv")
+    data_path = os.path.join(data_folder, dataset_name, "cardio_train.csv")
     label_column = "cardio"
     id_column = "id"
     input_df = pd.read_csv(data_path, sep=";")

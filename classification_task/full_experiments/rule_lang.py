@@ -10,8 +10,8 @@ LANG_SYNTAX = {
     #feature aggregated value syntax dynamically added
 }
 
-# CAT_FEATS = ["Cholesterol", "Glucose", "Smoking", "Alcohol intake", "Physical activity"]
-CAT_FEATS = []
+CAT_FEATS = ["Cholesterol", "Glucose", "Smoking", "Alcohol intake", "Physical activity"]
+# CAT_FEATS = []
 DROP_FEATS = []
 
 # DROP_FEATS = sorted(["PAT_ID", 'label', "Pred", "PROVIDER_PENN_ID"])
